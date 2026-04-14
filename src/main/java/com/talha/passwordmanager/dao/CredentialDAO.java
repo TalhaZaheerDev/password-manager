@@ -45,4 +45,39 @@ public class CredentialDAO {
         conn.close();
         return list;
     }
+
+    public List<String> searchByWebsite(int userId, String website) throws Exception {
+        List<String> list = new ArrayList<>();
+
+        Connection conn = DBConnection.getConnection();
+        PreparedStatement ps = conn.prepareStatement(
+                "SELECT id, website, username, password FROM credentials WHERE user_id=? AND website ILIKE ?"
+        );
+
+        ps.setInt(1, userId);
+        ps.setString(2, "%" + website + "%");
+
+        ResultSet rs = ps.executeQuery();
+
+        while (rs.next()) {
+            String decrypted = CryptoUtil.decrypt(rs.getString("password"));
+            list.add(rs.getInt("id") + " | " + rs.getString("website") + " | " + rs.getString("username") + " | " + decrypted);
+        }
+
+        conn.close();
+        return list;
+    }
+
+    public void deleteCredential(int id) throws Exception {
+        Connection conn = DBConnection.getConnection();
+
+        PreparedStatement ps = conn.prepareStatement(
+                "DELETE FROM credentials WHERE id=?"
+        );
+
+        ps.setInt(1, id);
+        ps.executeUpdate();
+
+        conn.close();
+    }
 }
