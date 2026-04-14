@@ -9,8 +9,9 @@ import java.util.List;
 
 public class CredentialDAO {
 
-    public void addCredential(int userId, String website, String username, String password) throws Exception {
-        String encrypted = CryptoUtil.encrypt(password);
+    public void addCredential(int userId, String website, String username, String password, String masterPassword) throws Exception {
+
+        String encrypted = CryptoUtil.encrypt(password, masterPassword);
 
         Connection conn = DBConnection.getConnection();
         PreparedStatement ps = conn.prepareStatement(
@@ -26,27 +27,27 @@ public class CredentialDAO {
         conn.close();
     }
 
-    public List<String> getCredentials(int userId) throws Exception {
+    public List<String> getCredentials(int userId, String masterPassword) throws Exception {
         List<String> list = new ArrayList<>();
 
         Connection conn = DBConnection.getConnection();
         PreparedStatement ps = conn.prepareStatement(
-                "SELECT website, username, password FROM credentials WHERE user_id=?"
+                "SELECT id, website, username, password FROM credentials WHERE user_id=?"
         );
 
         ps.setInt(1, userId);
         ResultSet rs = ps.executeQuery();
 
         while (rs.next()) {
-            String decrypted = CryptoUtil.decrypt(rs.getString("password"));
-            list.add(rs.getString("website") + " | " + rs.getString("username") + " | " + decrypted);
+            String decrypted = CryptoUtil.decrypt(rs.getString("password"), masterPassword);
+            list.add(rs.getInt("id") + " | " + rs.getString("website") + " | " + rs.getString("username") + " | " + decrypted);
         }
 
         conn.close();
         return list;
     }
 
-    public List<String> searchByWebsite(int userId, String website) throws Exception {
+    public List<String> searchByWebsite(int userId, String website, String masterPassword) throws Exception {
         List<String> list = new ArrayList<>();
 
         Connection conn = DBConnection.getConnection();
@@ -60,7 +61,7 @@ public class CredentialDAO {
         ResultSet rs = ps.executeQuery();
 
         while (rs.next()) {
-            String decrypted = CryptoUtil.decrypt(rs.getString("password"));
+            String decrypted = CryptoUtil.decrypt(rs.getString("password"), masterPassword);
             list.add(rs.getInt("id") + " | " + rs.getString("website") + " | " + rs.getString("username") + " | " + decrypted);
         }
 

@@ -45,6 +45,7 @@ public class Main {
         }
 
         int userId = user.getId();
+        String masterPassword = password; // used for AES key derivation
 
         while (true) {
             System.out.println("\n1. Add\n2. View\n3. Search\n4. Delete\n5. Exit");
@@ -53,6 +54,7 @@ public class Main {
 
             try {
                 switch (c) {
+
                     case 1:
                         System.out.print("Website: ");
                         String site = sc.nextLine();
@@ -63,19 +65,21 @@ public class Main {
                         System.out.print("Password: ");
                         String p = sc.nextLine();
 
-                        service.add(userId, site, u, p);
+                        service.add(userId, site, u, p, masterPassword);
                         System.out.println("Saved.");
                         break;
 
                     case 2:
-                        service.getAll(userId).forEach(System.out::println);
+                        service.getAll(userId, masterPassword)
+                                .forEach(System.out::println);
                         break;
 
                     case 3:
                         System.out.print("Website: ");
                         String w = sc.nextLine();
 
-                        service.search(userId, w).forEach(System.out::println);
+                        service.search(userId, w, masterPassword)
+                                .forEach(System.out::println);
                         break;
 
                     case 4:
@@ -94,6 +98,7 @@ public class Main {
                     default:
                         System.out.println("Invalid option");
                 }
+
             } catch (Exception e) {
                 System.out.println("Error: " + e.getMessage());
             }
